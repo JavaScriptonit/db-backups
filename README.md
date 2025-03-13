@@ -17,6 +17,6 @@ https://habr.com/ru/companies/softpoint/articles/795305/ - Бэкап, бэка�
 
 ```
 git add .
-git commit -m "update README.md"
+git commit -m "add utils.md"
 git push -u origin main
 ```
