@@ -1,0 +1,28 @@
+---
+- name: Backup MongoDB Database
+  hosts: serverspace_host
+  become: yes  # Запуск от имени суперпользователя
+  tasks:
+    - name: Create backup directory
+      file:
+        path: /backups
+        state: directory
+        mode: '0755'
+
+    # Backup MongoDB
+    - name: Backup MongoDB
+      command: >
+        mongodump --out /backups/mongodb_backup_{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}{{ ansible_date_time.minute }}{{ ansible_date_time.second }} 
+      register: mongo_backup
+      ignore_errors: true
+
+    - debug:
+        var: mongo_backup
+
+    # Optionally, if you want to transfer backups to your local machine, you can use rsync or scp:
+    # Uncomment the lines below to transfer backups
+    # - name: Copy MongoDB Backup to Local
+    #   fetch:
+    #     src: /backups/
+    #     dest: /path/to/local/backup/mongodb/
+    #     flat: yes

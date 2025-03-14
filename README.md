@@ -20,3 +20,8 @@ git add .
 git commit -m "add utils.md"
 git push -u origin main
 ```
+
+
+
+# Плейбук Ansible для резервного копирования MongoDB и PostgreSQL
+/Users/andreyshabunov/PhpstormProjects/db-backups/backup_databases.yml
