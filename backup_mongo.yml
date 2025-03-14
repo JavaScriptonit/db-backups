@@ -7,7 +7,7 @@
       file:
         path: /backups
         state: directory
-        mode: '0755'
+        mode: '0777'
 
     # Backup MongoDB
     - name: Backup MongoDB

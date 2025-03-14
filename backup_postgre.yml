@@ -1,13 +1,13 @@
 ---
 - name: Backup PostgreSQL Database
   hosts: serverspace_host_postgres
-  become: yes  # Запуск от имени суперпользователя
+  become: no  # Запуск от имени суперпользователя
   tasks:
     - name: Create backup directory
       file:
         path: /backups
         state: directory
-        mode: '0755'
+        mode: '0777'
 
     # Backup PostgreSQL
     - name: Backup PostgreSQL
