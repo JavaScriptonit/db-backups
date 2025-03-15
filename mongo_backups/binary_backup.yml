@@ -1,0 +1,59 @@
+- name: Создание коллекций и резервное копирование MongoDB
+  hosts: serverspace_host
+  become: yes  # Запуск от имени суперпользователя
+
+  vars:
+    mongo_user: "mongo_user"
+    mongo_password: "mongo_password"
+    db_name: "test_db"
+    backup_dir: "/backups"
+    collections:
+      - "collection1"
+      - "collection2"
+      - "collection3"
+
+  tasks:
+    - name: Убедиться, что директория для резервных копий существует
+      file:
+        path: "{{ backup_dir }}"
+        state: directory
+        mode: '0777'
+
+    - name: Создание коллекций в MongoDB
+      command: mongosh {{ db_name }} --username {{ mongo_user }} --password {{ mongo_password }} --eval "db.createCollection('{{ item }}')"
+      loop: "{{ collections }}"
+      register: collection_creation
+      ignore_errors: true
+
+    - name: Вывод результата создания коллекций
+      debug:
+        msg: "Создана коллекция: {{ item }}"
+      loop: "{{ collections }}"
+      when: collection_creation is not skipped
+
+    # Backup MongoDB (создает резервную копию конкретной базы данных и всех ее коллекций)
+    - name: Резервное копирование MongoDB - двоичный формат
+      command: mongodump --db {{ db_name }} --out {{ backup_dir }}/mongodb_{{ db_name }}_backup_{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}{{ ansible_date_time.minute }}{{ ansible_date_time.second }}
+      register: binary_backup_result
+
+    - name: Вывод результата двоичного бэкапа
+      debug:
+        var: binary_backup_result
+
+    # Backup MongoDB (создает резервную копию всех баз данных на сервере MongoDB)
+    - name: Backup MongoDB
+      command: >
+        mongodump --out {{ backup_dir }}/mongodb_alldb_backup_{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}{{ ansible_date_time.minute }}{{ ansible_date_time.second }} 
+      register: mongo_backup
+      ignore_errors: true
+
+    - debug:
+        var: mongo_backup
+
+    # Optionally, if you want to transfer backups to your local machine, you can use rsync or scp:
+    # Uncomment the lines below to transfer backups
+    # - name: Copy MongoDB Backup to Local
+    #   fetch:
+    #     src: /backups/
+    #     dest: /path/to/local/backup/mongodb/
+    #     flat: yes

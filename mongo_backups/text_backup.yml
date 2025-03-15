@@ -1,0 +1,41 @@
+- name: Создание коллекций и резервное копирование MongoDB в формат JSON
+  hosts: serverspace_host
+  become: yes  # Запуск от имени суперпользователя
+
+  vars:
+    mongo_user: "mongo_user"
+    mongo_password: "mongo_password"
+    db_name: "test_db"
+    backup_dir: "/backups"
+    collections:
+      - "collection1"
+      - "collection2"
+      - "collection3"
+
+  tasks:
+    - name: Убедиться, что директория для резервных копий существует
+      file:
+        path: "{{ backup_dir }}"
+        state: directory
+        mode: '0777'
+
+    - name: Создание коллекций в MongoDB
+      command: mongosh {{ db_name }} --username {{ mongo_user }} --password {{ mongo_password }} --eval "db.createCollection('{{ item }}')"
+      loop: "{{ collections }}"
+      register: collection_creation
+      ignore_errors: true
+
+    - name: Вывод результата создания коллекций
+      debug:
+        msg: "Создана коллекция: {{ item }}"
+      loop: "{{ collections }}"
+      when: collection_creation is not skipped
+
+    - name: Резервное копирование MongoDB - экспорт в формат JSON
+      command: mongoexport --db {{ db_name }} --collection {{ item }} --out {{ backup_dir }}/mongo_export_{{ item }}_{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}{{ ansible_date_time.minute }}{{ ansible_date_time.second }}.json
+      loop: "{{ collections }}"
+      register: json_backup_result
+
+    - name: Вывод результата экспорта в JSON
+      debug:
+        var: json_backup_result

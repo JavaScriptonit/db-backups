@@ -1,0 +1,39 @@
+- name: Создание коллекций и резервное копирование MongoDB
+  hosts: serverspace_host
+  become: yes  # Запуск от имени суперпользователя
+
+  vars:
+    mongo_user: "mongo_user"
+    mongo_password: "mongo_password"
+    db_name: "test_db"
+    backup_dir: "/backups"
+    collections:
+      - "collection1"
+      - "collection2"
+      - "collection3"
+
+  tasks:
+    # Cold backup MongoDB
+    - name: Stop MongoDB service
+      service:
+        name: mongod
+        state: stopped
+
+    - name: Wait for MongoDB to fully stop
+      wait_for:
+        timeout: 10  # Ожидание 10 секунд
+
+    - name: Perform cold backup of MongoDB
+      command: cp -r /var/lib/mongodb {{ backup_dir }}/mongodb_cold_backup_{{ ansible_date_time.iso8601 }} 
+
+    - name: Start MongoDB service
+      service:
+        name: mongod
+        state: started
+
+    - name: Wait for MongoDB to start
+      wait_for:
+        port: 27017
+        delay: 5  # Задержка перед началом проверки порта
+        timeout: 10  # Максимальное время ожидания в секундах
+  

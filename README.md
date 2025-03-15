@@ -17,7 +17,7 @@ https://habr.com/ru/companies/softpoint/articles/795305/ - Бэкап, бэка�
 
 ```
 git add .
-git commit -m "add cold backup files"
+git commit -m "add all mongo backup files"
 git push -u origin main
 ```
 

@@ -1,0 +1,6 @@
+# Не работают оба пользователя одновременно, но раздельно работают корректно
+[servers:children]
+serverspace_host_postgres
+
+[serverspace_host_postgres]
+78.140.241.76 ansible_ssh_user=postgres ansible_ssh_pass=your_postgres_password
