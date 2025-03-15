@@ -1,0 +1,27 @@
+---
+- name: Backup PostgreSQL and MongoDB Databases
+  hosts: serverspace_host_postgres
+  become: yes  # Запуск от имени суперпользователя
+  vars:
+    postgres_db_name: "имя_вашей_базы_данных"
+    backup_dir: "/backups"  
+  tasks:
+    - name: Create backup directory if not exists
+      file:
+        path: "{{ backup_dir }}"
+        state: directory
+        mode: '0777'
+
+    # Cold backup PostgreSQL
+    - name: Stop PostgreSQL service
+      service:
+        name: postgresql
+        state: stopped
+
+    - name: Perform cold backup of PostgreSQL
+      command: cp -r /var/lib/postgresql/14/main {{ backup_dir }}/postgresql_cold_backup_{{ ansible_date_time.iso8601 }} 
+
+    - name: Start PostgreSQL service
+      service:
+        name: postgresql
+        state: started
