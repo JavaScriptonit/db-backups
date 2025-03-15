@@ -12,16 +12,6 @@
         state: directory
         mode: '0777'
 
-    # Backup PostgreSQL
-    - name: Backup PostgreSQL
-      command: >
-        pg_dumpall --file={{ backup_dir }}/postgresql_backup_{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}{{ ansible_date_time.minute }}{{ ansible_date_time.second }} 
-      register: postgres_backup
-      ignore_errors: true
-
-    - debug:
-        var: postgres_backup
-
     # Backup PostgreSQL - text format
     - name: Text backup of PostgreSQL
       command: pg_dump -f {{ backup_dir }}/postgresql_text_backup_{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}{{ ansible_date_time.minute }}{{ ansible_date_time.second }}.sql {{ postgres_db_name }}
@@ -30,15 +20,6 @@
 
     - debug:
         var: postgres_text_backup
-
-    # Backup PostgreSQL - binary format
-    - name: Binary backup of PostgreSQL
-      command: pg_dump -Fc {{ postgres_db_name }} -f {{ backup_dir }}/postgresql_binary_backup_{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}{{ ansible_date_time.minute }}{{ ansible_date_time.second }}.dump
-      register: postgres_binary_backup
-      ignore_errors: true
-
-    - debug:
-        var: postgres_binary_backup
 
     # - name: Copy PostgreSQL Backup to Local
     #   fetch:

@@ -1,0 +1,38 @@
+---
+- name: Backup PostgreSQL Database
+  hosts: serverspace_host_postgres
+  become: no  # Запуск от имени суперпользователя
+  vars:
+    postgres_db_name: "mydatabase"
+    backup_dir: "/backups"  
+  tasks:
+    - name: Create backup directory
+      file:
+        path: "{{ backup_dir }}"
+        state: directory
+        mode: '0777'
+
+    # Backup PostgreSQL
+    - name: Backup PostgreSQL
+      command: >
+        pg_dumpall --file={{ backup_dir }}/postgresql_alldb_backup_{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}{{ ansible_date_time.minute }}{{ ansible_date_time.second }} 
+      register: postgres_backup
+      ignore_errors: true
+
+    - debug:
+        var: postgres_backup
+
+    # Backup PostgreSQL - binary format
+    - name: Binary backup of PostgreSQL
+      command: pg_dump -Fc {{ postgres_db_name }} -f {{ backup_dir }}/postgresql_{{ postgres_db_name }}_backup_{{ ansible_date_time.date }}_{{ ansible_date_time.hour }}{{ ansible_date_time.minute }}{{ ansible_date_time.second }}.dump
+      register: postgres_binary_backup
+      ignore_errors: true
+
+    - debug:
+        var: postgres_binary_backup
+
+    # - name: Copy PostgreSQL Backup to Local
+    #   fetch:
+    #     src: /backups/
+    #     dest: /path/to/local/backup/postgresql/
+    #     flat: yes

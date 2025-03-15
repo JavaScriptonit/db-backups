@@ -1,9 +1,9 @@
 ---
-- name: Backup PostgreSQL and MongoDB Databases
+- name: Cold backup PostgreSQL Databases
   hosts: serverspace_host_postgres
   become: yes  # Запуск от имени суперпользователя
   vars:
-    postgres_db_name: "имя_вашей_базы_данных"
+    postgres_db_name: "mydatabase"
     backup_dir: "/backups"  
   tasks:
     - name: Create backup directory if not exists
@@ -17,6 +17,10 @@
       service:
         name: postgresql
         state: stopped
+    
+    - name: Wait for PostgreSQL to fully stop
+      wait_for:
+        timeout: 10  # Ожидание 10 секунд
 
     - name: Perform cold backup of PostgreSQL
       command: cp -r /var/lib/postgresql/14/main {{ backup_dir }}/postgresql_cold_backup_{{ ansible_date_time.iso8601 }} 
@@ -25,3 +29,9 @@
       service:
         name: postgresql
         state: started
+
+    - name: Wait for PostgreSQL to start
+      wait_for:
+        port: 5432
+        delay: 5  # Задержка перед началом проверки порта
+        timeout: 10  # Максимальное время ожидания в секундах

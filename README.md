@@ -17,7 +17,7 @@ https://habr.com/ru/companies/softpoint/articles/795305/ - Бэкап, бэка�
 
 ```
 git add .
-git commit -m "add all mongo backup files"
+git commit -m "add all postgresql backup files"
 git push -u origin main
 ```
 
